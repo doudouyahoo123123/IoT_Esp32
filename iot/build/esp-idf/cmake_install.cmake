@@ -118,6 +118,8 @@ if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   include("/home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/wifi_provisioning/cmake_install.cmake")
   include("/home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/main/cmake_install.cmake")
   include("/home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/protocol_examples_common/cmake_install.cmake")
+  include("/home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/sensors_rs485/cmake_install.cmake")
+  include("/home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/smart_config/cmake_install.cmake")
 
 endif()
 

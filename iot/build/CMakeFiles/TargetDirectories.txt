@@ -9,6 +9,7 @@
 /home/doudou/esp/esp32/esp-idf/examples/iot/build/CMakeFiles/size-files.dir
 /home/doudou/esp/esp32/esp-idf/examples/iot/build/CMakeFiles/erase_flash.dir
 /home/doudou/esp/esp32/esp-idf/examples/iot/build/CMakeFiles/bootloader.dir
+/home/doudou/esp/esp32/esp-idf/examples/iot/build/CMakeFiles/iot.elf.dir
 /home/doudou/esp/esp32/esp-idf/examples/iot/build/CMakeFiles/flash.dir
 /home/doudou/esp/esp32/esp-idf/examples/iot/build/CMakeFiles/confserver.dir
 /home/doudou/esp/esp32/esp-idf/examples/iot/build/CMakeFiles/uf2.dir
@@ -16,7 +17,6 @@
 /home/doudou/esp/esp32/esp-idf/examples/iot/build/CMakeFiles/encrypted-flash.dir
 /home/doudou/esp/esp32/esp-idf/examples/iot/build/CMakeFiles/install/strip.dir
 /home/doudou/esp/esp32/esp-idf/examples/iot/build/CMakeFiles/_project_elf_src.dir
-/home/doudou/esp/esp32/esp-idf/examples/iot/build/CMakeFiles/mqtt_tcp.elf.dir
 /home/doudou/esp/esp32/esp-idf/examples/iot/build/CMakeFiles/uf2-app.dir
 /home/doudou/esp/esp32/esp-idf/examples/iot/build/CMakeFiles/size.dir
 /home/doudou/esp/esp32/esp-idf/examples/iot/build/CMakeFiles/size-components.dir
@@ -672,3 +672,17 @@
 /home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/protocol_examples_common/CMakeFiles/list_install_components.dir
 /home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/protocol_examples_common/CMakeFiles/install/local.dir
 /home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/protocol_examples_common/CMakeFiles/install.dir
+/home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/sensors_rs485/CMakeFiles/install/strip.dir
+/home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/sensors_rs485/CMakeFiles/edit_cache.dir
+/home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/sensors_rs485/CMakeFiles/__idf_sensors_rs485.dir
+/home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/sensors_rs485/CMakeFiles/rebuild_cache.dir
+/home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/sensors_rs485/CMakeFiles/list_install_components.dir
+/home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/sensors_rs485/CMakeFiles/install/local.dir
+/home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/sensors_rs485/CMakeFiles/install.dir
+/home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/smart_config/CMakeFiles/install/strip.dir
+/home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/smart_config/CMakeFiles/edit_cache.dir
+/home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/smart_config/CMakeFiles/rebuild_cache.dir
+/home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/smart_config/CMakeFiles/__idf_smart_config.dir
+/home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/smart_config/CMakeFiles/list_install_components.dir
+/home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/smart_config/CMakeFiles/install/local.dir
+/home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/smart_config/CMakeFiles/install.dir

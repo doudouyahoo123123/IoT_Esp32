@@ -71,3 +71,5 @@
 /home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/wifi_provisioning/libwifi_provisioning.a
 /home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/main/libmain.a
 /home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/protocol_examples_common/libprotocol_examples_common.a
+/home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/sensors_rs485/libsensors_rs485.a
+/home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/smart_config/libsmart_config.a
