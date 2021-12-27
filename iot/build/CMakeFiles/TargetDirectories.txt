@@ -686,3 +686,10 @@
 /home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/smart_config/CMakeFiles/list_install_components.dir
 /home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/smart_config/CMakeFiles/install/local.dir
 /home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/smart_config/CMakeFiles/install.dir
+/home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/wifi/CMakeFiles/install/strip.dir
+/home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/wifi/CMakeFiles/edit_cache.dir
+/home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/wifi/CMakeFiles/__idf_wifi.dir
+/home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/wifi/CMakeFiles/rebuild_cache.dir
+/home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/wifi/CMakeFiles/list_install_components.dir
+/home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/wifi/CMakeFiles/install/local.dir
+/home/doudou/esp/esp32/esp-idf/examples/iot/build/esp-idf/wifi/CMakeFiles/install.dir

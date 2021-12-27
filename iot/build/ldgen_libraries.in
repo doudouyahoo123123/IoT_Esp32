@@ -73,3 +73,4 @@ $<TARGET_FILE:__idf_main>
 $<TARGET_FILE:__idf_protocol_examples_common>
 $<TARGET_FILE:__idf_sensors_rs485>
 $<TARGET_FILE:__idf_smart_config>
+$<TARGET_FILE:__idf_wifi>

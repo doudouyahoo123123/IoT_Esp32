@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "smart_config.h": "c",
+        "sensors_rs485.h": "c"
+    }
+}

@@ -84,9 +84,10 @@ void get_sensors_value()
     uint8_t* data = (uint8_t*) malloc(BUF_SIZE);
 
     ESP_LOGI(TAG, "UART start recieve loop.\r\n");
+    char check_data[8]={0x01,0x03,0x00,0x00,0x00,0x02,0xC4,0x0B};
      while(1) {
         //Read data from UART
-        char check_data[8]={0x01,0x03,0x00,0x00,0x00,0x02,0xC4,0x0B};
+        
 
         printf("check_data send:%s\n",check_data);
         echo_send(uart_num, check_data, 8);
@@ -134,12 +135,11 @@ void get_sensors_value()
              cJSON_AddNumberToObject(pValue,"temperature",temperature);
              cJSON_AddNumberToObject(pValue,"huminity",huminity);
         
-            // char *sendData = cJSON_Print(pRoot);
              sendData = cJSON_Print(pRoot);
 	         ets_printf("\r\n creatJson : %s\r\n", sendData);
 
              xEventGroupSetBits(Sensors_Event_Handler,EVENT1);
-             vTaskDelay(10000 / portTICK_PERIOD_MS);
+             vTaskDelay(60000 / portTICK_PERIOD_MS);
 
              cJSON_free((void *) sendData);                             // 释放cJSON_Print ()分配出来的内存空间
              cJSON_Delete(pRoot);                                       // 释放cJSON_CreateObject ()分配出来的内存空间
@@ -148,5 +148,6 @@ void get_sensors_value()
             // Echo a "." to show we are alive while we wait for input
             ESP_ERROR_CHECK(uart_wait_tx_done(uart_num, 10));
         }
+             vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }

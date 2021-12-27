@@ -1,7 +1,15 @@
 #include "../include/smart_config.h"
-//#include "esp_wpa2.h"
-//#include "nvs_flash.h"
 
+
+#define EXAMPLE_ESP_WIFI_SSID      "360wifi"
+#define EXAMPLE_ESP_WIFI_PASS      "1234567890"
+#define EXAMPLE_ESP_MAXIMUM_RETRY  10
+#define WIFI_CONNECTED_BIT BIT0
+#define WIFI_FAIL_BIT      BIT1
+
+
+static EventGroupHandle_t s_wifi_event_group;
+static int s_retry_num = 0;
 
 /* FreeRTOS event group to signal when we are connected & ready to make a request */
 static EventGroupHandle_t s_wifi_event_group;
@@ -11,7 +19,7 @@ static EventGroupHandle_t s_wifi_event_group;
    to the AP with an IP? */
 static const int CONNECTED_BIT = BIT0;
 static const int ESPTOUCH_DONE_BIT = BIT1;
-static const char *TAG1 = "smartconfig_example";
+static const char *TAG1 = "wifi";
 
 static void tcp_client_task(void *pvParameters)
 {

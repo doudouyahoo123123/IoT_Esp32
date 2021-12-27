@@ -7,7 +7,7 @@
 #include "nvs_flash.h"
 #include "esp_event.h"
 #include "esp_netif.h"
-//#include "protocol_examples_common.h"
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/semphr.h"
@@ -18,167 +18,38 @@
 #include "esp_log.h"
 #include "mqtt_client.h"
 #include "cJSON.h"
+//#include "queue.h"
 
 #define HuaWeiYun_report "$oc/devices/615bec4d88056b027dd7ac22_test1234567/sys/properties/report"
+#define HuaWeiYun_response "$oc/devices/615bec4d88056b027dd7ac22_test1234567/sys/commands/response/request_id="
+
 esp_mqtt_event_handle_t event;
 esp_mqtt_client_handle_t client;
 
 #define ECHO_TASK_STACK_SIZE    (2048)
 #define ECHO_TASK_PRIO          (10)
 
-//wifi
-#include <string.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/event_groups.h"
-#include "esp_system.h"
-#include "esp_wifi.h"
-#include "esp_event.h"
-#include "esp_log.h"
-#include "nvs_flash.h"
-#include "lwip/err.h"
-#include "lwip/sys.h"
 
 //smart_config  and  tcp
-
 #include "../components/smart_config/include/smart_config.h"
 #include "../components/sensors_rs485/include/sensors_rs485.h"
+#include "../components/wifi/include/wifi.h"
 
-#define EXAMPLE_ESP_WIFI_SSID      "360wifi"
-#define EXAMPLE_ESP_WIFI_PASS      "1234567890"
-#define EXAMPLE_ESP_MAXIMUM_RETRY  10
-
-static EventGroupHandle_t s_wifi_event_group;
-
-#define WIFI_CONNECTED_BIT BIT0
-#define WIFI_FAIL_BIT      BIT1
-
-static int s_retry_num = 0;
  
 static const char *TAG = "MQTT_EXAMPLE";
 void start_task(void * pvParameters);
 TaskHandle_t StartTask_Handler;
 
-// 与wifi连接、ip获取的有关事件处理
-static void event_handler(void* arg, esp_event_base_t event_base,
-                                int32_t event_id, void* event_data)
-{
-    if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
-        esp_wifi_connect();
-    } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
-        if (s_retry_num < EXAMPLE_ESP_MAXIMUM_RETRY) {
-            esp_wifi_connect();
-            s_retry_num++;
-            ESP_LOGI(TAG, "retry to connect to the AP");
-        } else {
-            xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
-        }
-        ESP_LOGI(TAG,"connect to the AP fail");
-    } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
-        ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
+QueueHandle_t Mqtt_command_xQueue;
+#define EVENT1 (0x01 << 1)    //rs485
+#define EVENT2 (0x02 << 2)    //mqtt command
 
-        //IPSTR = ip str    IP2STR = ip to str
-        ESP_LOGI(TAG, "got ip:" IPSTR, IP2STR(&event->ip_info.ip));
-        s_retry_num = 0;
-        xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
-    }
-}
-
-void wifi_init_sta(void)
-{
-    s_wifi_event_group = xEventGroupCreate();
-
- //   ESP_ERROR_CHECK(esp_netif_init());
-//    ESP_ERROR_CHECK(esp_event_loop_create_default());
-
-    // 创建具有TCP / IP堆栈的默认网络接口实例绑定基站。
-    esp_netif_create_default_wifi_sta();               
-
-    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-    ESP_ERROR_CHECK(esp_wifi_init(&cfg));
-
-    //事件句柄
-    esp_event_handler_instance_t instance_any_id;
-    esp_event_handler_instance_t instance_got_ip;
-
-    
-       //esp_event_handler_instance_register(event_base,
-                                         //    event_id,
-                                         //    event_handler,
-                                         //    *event_handler_arg,
-                                          //    *instance);
-   // event_base类型为：esp_event_base_t；表示 事件基，代表事件的大类（如WiFi事件，IP事件等）
-   // event_id类型为：int32_t；表示事件ID，即事件基下的一个具体事件（如WiFi连接丢失，IP成功获取）
-   // event_handler类型为：esp_event_handler_t；表示一个handler函数（模板请见第⑤步）
-   // *event_handler_arg类型为：void；表示需要传递给handler函数的参数
-   // *instance类型为：esp_event_handler_instance_t指针；**[输出]**表示此函数注册的事件实例对象，用于生命周期管理（如删除unrigister这个事件handler）
-
-    //将事件处理程序注册到系统事件循环
-    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT,                            
-                                                        ESP_EVENT_ANY_ID,
-                                                        &event_handler,
-                                                        NULL,
-                                                        &instance_any_id));
-    //将事件处理程序注册到系统事件循环                                                    
-    ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT,
-                                                        IP_EVENT_STA_GOT_IP,
-                                                        &event_handler,
-                                                        NULL,
-                                                        &instance_got_ip));
-
-    wifi_config_t wifi_config = {
-        .sta = {
-            .ssid = EXAMPLE_ESP_WIFI_SSID,
-            .password = EXAMPLE_ESP_WIFI_PASS,
-
-	     .threshold.authmode = WIFI_AUTH_WPA2_PSK,
-
-            .pmf_cfg = {
-                .capable = true,
-                .required = false
-            },
-        },
-    };
-    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA) );
-    ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config) );
-    ESP_ERROR_CHECK(esp_wifi_start() );
-
-    ESP_LOGI(TAG, "wifi_init_sta finished.");
-
-    /* Waiting until either the connection is established (WIFI_CONNECTED_BIT) or connection failed for the maximum
-     * number of re-tries (WIFI_FAIL_BIT). The bits are set by event_handler() (see above) */
-
-    //在此阻塞，直至事件组中 WIFI_CONNECTED_BIT | WIFI_FAIL_BIT的标志位其中之一变为1.由阻塞态变为激活态时，把标志位赋值给bits
-    EventBits_t bits = xEventGroupWaitBits(s_wifi_event_group,
-            WIFI_CONNECTED_BIT | WIFI_FAIL_BIT,
-            pdFALSE,
-            pdFALSE,
-            portMAX_DELAY);
-
-    /* xEventGroupWaitBits() returns the bits before the call returned, hence we can test which event actually
-     * happened. */
-    if (bits & WIFI_CONNECTED_BIT) {
-        ESP_LOGI(TAG, "connected to ap SSID:%s password:%s",
-                 EXAMPLE_ESP_WIFI_SSID, EXAMPLE_ESP_WIFI_PASS);
-                
-    } else if (bits & WIFI_FAIL_BIT) {
-        ESP_LOGI(TAG, "Failed to connect to SSID:%s, password:%s",
-                 EXAMPLE_ESP_WIFI_SSID, EXAMPLE_ESP_WIFI_PASS);
-    } else {
-        ESP_LOGE(TAG, "UNEXPECTED EVENT");
-    }
-
-    /* The event will not be processed after unregister */
-    ESP_ERROR_CHECK(esp_event_handler_instance_unregister(IP_EVENT, IP_EVENT_STA_GOT_IP, instance_got_ip));
-    ESP_ERROR_CHECK(esp_event_handler_instance_unregister(WIFI_EVENT, ESP_EVENT_ANY_ID, instance_any_id));
-    vEventGroupDelete(s_wifi_event_group);
-
-    printf("test\n");
-
-    // xTaskCreate(start_task,"start_task",2048,NULL,3,&StartTask_Handler);
-    //  vTaskStartScheduler();
-}
-
+typedef struct{
+    uint8_t data_lenth;
+    uint8_t topic_lenth;
+    char *data;
+    char *topic;
+} mqtt_command_queue_t;
 
 static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
 {
@@ -193,9 +64,9 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
         // 建立连接成功
         case MQTT_EVENT_CONNECTED:
             printf("MQTT_client cnnnect to EMQ ok. \n");          
-          //  esp_mqtt_client_publish(client, "domoticz/out", "I am ESP32.", 0, 1, 0);
             // 订阅主题，qos=0
-            esp_mqtt_client_subscribe(client, "domoticz/out", 0);      
+          //  esp_mqtt_client_subscribe(client, "domoticz/out", 0); 
+            esp_mqtt_client_subscribe(client, "$oc/devices/615bec4d88056b027dd7ac22_test1234567/sys/commands/# ", 0);       
             break;
         // 客户端断开连接
         case MQTT_EVENT_DISCONNECTED:
@@ -215,8 +86,27 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
             break;
         // 已收到订阅的主题消息    
         case MQTT_EVENT_DATA:
-            printf("mqtt received topic: %.*s \n",event->topic_len, event->topic);
-            printf("topic data: %.*s\r\n", event->data_len, event->data);
+        printf("event->topic_len: %d\r\n",event->topic_len);
+        printf("event->data_len: %d\r\n", event->data_len);
+        printf("mqtt received topic: %.*s \n",event->topic_len, event->topic);
+        printf("topic data: %.*s\r\n", event->data_len, event->data);
+        
+        mqtt_command_queue_t *command_queue = (mqtt_command_queue_t *)malloc((event->data_len)+(event->topic_len)+2);
+        command_queue->data_lenth = event->data_len;
+        command_queue->topic_lenth = event->topic_len;
+        command_queue->data = event->data;
+        command_queue->topic = event->topic;
+
+        int address = (int)command_queue;
+        BaseType_t xStatus;
+        xStatus = xQueueSendToBack( Mqtt_command_xQueue, (void*)&address, 0 );
+        if( xStatus != pdPASS )
+		   {
+			printf( "Could not send to the queue.\r\n" );
+		      }
+              else
+            xEventGroupSetBits(Sensors_Event_Handler,EVENT2);
+
             break;
         // 客户端遇到错误
         case MQTT_EVENT_ERROR:
@@ -246,7 +136,7 @@ static void mqtt_app_start(void * pvParameters)
     esp_mqtt_client_start(client);
     while(1)
     {
-        printf("mqtt\n");
+        printf("mqtt is running\n");
         vTaskDelay(5000 / portTICK_PERIOD_MS);
     }
 }
@@ -256,7 +146,7 @@ static void echo_task(void * pvParameters)
     get_sensors_value();
 }
 
-#define EVENT1 (0x01 << 1)
+
 static void sensor_value_report(void * pvParameters)
 {
       EventBits_t sensor_event_bits;
@@ -264,7 +154,7 @@ static void sensor_value_report(void * pvParameters)
     while (1)
     {
         printf("sensor_value_report\n");
-            vTaskDelay(2000/portTICK_RATE_MS);
+        vTaskDelay(2000/portTICK_RATE_MS);
         sensor_event_bits = xEventGroupWaitBits(Sensors_Event_Handler,      //事件的句柄
                             EVENT1,    //感兴趣的事件
                             pdTRUE,             //退出时是否清除事件位
@@ -280,14 +170,115 @@ static void sensor_value_report(void * pvParameters)
     }
 }
 
+static void Mqtt_command_ReceiverTask(void * pvParameters)
+{
+    BaseType_t xStatus;
+    const TickType_t xTicksToWait = pdMS_TO_TICKS( 100UL );
+    int address;
+    EventBits_t mqtt_command_event_bits;
+
+    while(true)
+	{
+        mqtt_command_event_bits = xEventGroupWaitBits(Sensors_Event_Handler,      //事件的句柄
+                            EVENT2,    //感兴趣的事件
+                            pdTRUE,             //退出时是否清除事件位
+                            pdTRUE,             //是否满足所有事件
+                            portMAX_DELAY);     //超时时间，一直等所有事件都满足
+
+        if(((EVENT2) & mqtt_command_event_bits) == (EVENT2))
+           {
+              if( uxQueueMessagesWaiting( Mqtt_command_xQueue ) != 0 )
+		{
+			printf( "Queue should have been empty!\r\n" );
+		}
+		
+		// 参数1：队列
+		// 参数2：接收数据地址
+		// 参数3：block 时间
+        
+		xStatus = xQueueReceive( Mqtt_command_xQueue, (void*)&address, xTicksToWait );
+ 
+		if( xStatus == pdTRUE)
+		{
+            mqtt_command_queue_t *command_queue;
+            command_queue = (mqtt_command_queue_t *)address;
+            printf( "Received Topic = %.*s\r\n", command_queue->topic_lenth, command_queue->topic);
+			printf( "Received Data=  %.*s\r\n", command_queue->data_lenth, command_queue->data );
+            
+            char request_id[37];
+            sscanf(command_queue->topic,"%*[^=]=%[^{]",request_id);
+            printf("request_id = %s\r\n",request_id);
+           // char *HuaWeiYun_response_plus_request_id = HuaWeiYun_response;
+          //  printf("response = %s\r\n",HuaWeiYun_response_plus_request_id);
+            char HuaWeiYun_response_plus_request_id[200];
+            //test = HuaWeiYun_response;
+            strcpy(HuaWeiYun_response_plus_request_id,HuaWeiYun_response);
+            strcat(HuaWeiYun_response_plus_request_id,request_id);
+
+            printf("HuaWeiYun_response_plus_request_id = %s\r\n",HuaWeiYun_response_plus_request_id);
+            cJSON *json_parse; 
+            char *command_name;
+            json_parse = cJSON_Parse(command_queue->data);
+           
+             if(json_parse)
+               {
+                   
+                command_name = cJSON_GetObjectItem(json_parse, "command_name")->valuestring; //获取name键对应的值的信息
+               
+                if(!strcmp(command_name,"test_command"))
+                {
+                     printf("test_command,test_command,test_command,test_command,test_command,test_command \r\n");
+                }
+                
+                if(!strcmp(command_name,"GET_CODE_VERSION"))
+                {
+                     printf("GET_CODE_VERSION,GET_CODE_VERSION,GET_CODE_VERSION,GET_COD  E_VERSION,GET_CODE_VERSION,GET_CODE_VERSION \r\n");
+                      cJSON *pRoot = cJSON_CreateObject();                         // 创建JSON根部结构体
+                      cJSON *paras = cJSON_CreateObject();  
+                      cJSON_AddNumberToObject(pRoot,"err",0);
+                      cJSON_AddStringToObject(pRoot, "err_msg", "none");
+                      cJSON_AddItemToObject(pRoot,"paras",paras); 
+                      cJSON_AddStringToObject(paras, "version", "V0.0.1");
+        
+                      char *sendData_response = cJSON_Print(pRoot);
+	                  ets_printf("\r\n creatJson : %s\r\n", sendData);
+
+                      esp_mqtt_client_publish(client, HuaWeiYun_response_plus_request_id, sendData_response, 0, 1, 0);
+
+                      cJSON_free((void *) sendData_response);                             // 释放cJSON_Print ()分配出来的内存空间
+                      cJSON_Delete(pRoot);                                       // 释放cJSON_CreateObject ()分配出来的内存空间
+                }
+               }
+            cJSON_Delete(json_parse);
+            printf("request_id = %s\r\n",request_id);
+            free(command_queue);
+		}
+		else
+		{
+			printf( "Could not receive from the queue.\r\n" );
+		}
+              
+           } 
+		
+	}
+}
+
 
 void start_task(void * pvParameters)
 {
-    
     xTaskCreate(echo_task, "uart_echo_task", 6000, NULL, ECHO_TASK_PRIO, NULL);
     xTaskCreate(sensor_value_report, "sensor_value_report", 6000, NULL, ECHO_TASK_PRIO, NULL);
-  
     xTaskCreate(mqtt_app_start, "mqtt_app_start", ECHO_TASK_STACK_SIZE, NULL, ECHO_TASK_PRIO, NULL);
+    
+
+    if( Mqtt_command_xQueue != NULL )
+	{
+		xTaskCreate(Mqtt_command_ReceiverTask, "Mqtt_command_ReceiverTask", 6000, NULL, 2, NULL );
+	}
+    else 
+        ESP_LOGW(TAG, "Creat Mqtt command queue failed.");
+       
+    
     vTaskDelete(StartTask_Handler);
 }
 
@@ -295,7 +286,7 @@ void start_task(void * pvParameters)
  
 
 
- #define EVENT1 (0x01 << 1)
+#define EVENT1 (0x01 << 1)
 void app_main(void)
 {
     // ESP_LOGI(TAG, "[APP] Startup..");
@@ -320,13 +311,9 @@ void app_main(void)
     esp_efuse_mac_get_default(mac);
     printf("Default Mac Address = %02X:%02X:%02X:%02X:%02X:%02X\r\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 
+     //queue:  request_id + data_lenth + data
+    Mqtt_command_xQueue = xQueueCreate( 5, sizeof(int) );   //5:depth,300:width
 
-     
-
-    
-     //EventBits_t r_event = pdPASS;
-     
-   
     if(false)
     smart_config_run();
    
@@ -334,14 +321,12 @@ void app_main(void)
         //wifi连接
     wifi_init_sta();
     xTaskCreate(start_task,"start_task",2048,NULL,3,&StartTask_Handler);
-    vTaskStartScheduler();
-    
-    
+    vTaskStartScheduler();  
     }
 }
 
 
-
+ 
 
 
 
