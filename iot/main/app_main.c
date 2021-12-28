@@ -232,7 +232,7 @@ static void Mqtt_command_ReceiverTask(void * pvParameters)
                 
                 if(!strcmp(command_name,"GET_CODE_VERSION"))
                 {
-                     printf("GET_CODE_VERSION,GET_CODE_VERSION,GET_CODE_VERSION,GET_COD  E_VERSION,GET_CODE_VERSION,GET_CODE_VERSION \r\n");
+                      printf("GET_CODE_VERSION,GET_CODE_VERSION,GET_CODE_VERSION,GET_COD  E_VERSION,GET_CODE_VERSION,GET_CODE_VERSION \r\n");
                       cJSON *pRoot = cJSON_CreateObject();                         // 创建JSON根部结构体
                       cJSON *paras = cJSON_CreateObject();  
                       cJSON_AddNumberToObject(pRoot,"err",0);
@@ -281,10 +281,6 @@ void start_task(void * pvParameters)
     
     vTaskDelete(StartTask_Handler);
 }
-
-
- 
-
 
 #define EVENT1 (0x01 << 1)
 void app_main(void)

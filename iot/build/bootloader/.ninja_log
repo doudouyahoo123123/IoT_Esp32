@@ -131,3 +131,7 @@
 0	2654	1640610833	build.ninja	9081dce1468c7f1a
 2	58	0	esp-idf/esptool_py/CMakeFiles/bootloader_check_size	1e562baa5316c080
 2	85	0	esp-idf/esptool_py/CMakeFiles/bootloader_check_size	1e562baa5316c080
+1	3378	1640614211	build.ninja	9081dce1468c7f1a
+2	81	0	esp-idf/esptool_py/CMakeFiles/bootloader_check_size	1e562baa5316c080
+3	81	0	esp-idf/esptool_py/CMakeFiles/bootloader_check_size	1e562baa5316c080
+6	69	0	esp-idf/esptool_py/CMakeFiles/bootloader_check_size	1e562baa5316c080
